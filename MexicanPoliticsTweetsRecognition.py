@@ -279,7 +279,7 @@ with col1:
     )
     
 with col2:
-    dataPlot = Image.open('dataPlot.png')
+    dataPlot = Image.open('tdidfPlot.png')
     st.image(dataPlot, caption='Tf-idf data', width=720, height=480)
 
 st.write(
