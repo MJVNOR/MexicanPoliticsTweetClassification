@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import time
 
 import pandas as pd
 from PIL import Image
@@ -8,10 +9,6 @@ from pickle import dump
 
 st.set_page_config(layout="wide")
 
-
-filename = 'ModelSVM.pkl'
-loaded_model = pickle.load(open(filename, 'rb'))
-ModelSVM, Tfidf_vect = loaded_model
 #print(ModelSVM)
 df = pd.read_csv('tweets_base_madre.csv', encoding ='utf-8')
 
@@ -20,13 +17,13 @@ dfFirst.drop('id', inplace=True, axis=1)
 dfFirst.drop('user id', inplace=True, axis=1)
 dfFirst.drop('tidy_text', inplace=True, axis=1)
 dfFirst.drop('clasification', inplace=True, axis=1)
-
+del df
 df = pd.read_csv('tweets_base_madre.csv', encoding ='utf-8')
 dfClass = df
 dfClass.drop('id', inplace=True, axis=1)
 dfClass.drop('user id', inplace=True, axis=1)
 dfClass.drop('tidy_text', inplace=True, axis=1)
-
+del df
 st.write("""
 # What happen if you mix Twitter, the president of México and natural language processing?
 Nowdays, there is a lot of information in twitter and a bunch of people using this social media dialy (which creates more information) so… what happen if you grab a bunch of tweets that have words related to the politics of México and mainly, of course, Andrés Manuel López Obrador (actual president of México) and do an analysis? in this post we will show you the analysis that we did in the courses of natural language processing and pattern recognition in the university of Sonora.
@@ -62,6 +59,10 @@ Our main goal was to train a model to tell us if a text was liberal or conservat
 #Tfidf_vect = TfidfVectorizer(max_features=50000)
 #Tfidf_vect.fit(dfFinal['TokenizeTweetsTidy_text'])
 
+filename = 'ModelSVM.pkl'
+loaded_model = pickle.load(open(filename, 'rb'))
+ModelSVM, Tfidf_vect = loaded_model
+
 input = st.text_input(label='Insert a text in spanish', value='Amlo presidente')
 
 prediccionEjemplo = Tfidf_vect.transform([input])
@@ -78,7 +79,13 @@ if conservador <= 0.5:
     st.write('Result: In favor of the goverment')
 else:
     st.write('Result: Against the goverment')
+
 st.write('Result: {}'.format(resultadoPorcentaje))
+
+del filename
+del ModelSVM
+del Tfidf_vect
+
 st.write("""
 The f1 score will be used since it is used to combine the precision and recall measures into a single value.
 This is practical because it makes it easier to compare the combined performance of accuracy and comprehensiveness between various solutions.
@@ -91,7 +98,9 @@ The firts thing we did was the information gathering, using the twitter API we c
 
     df = pd.read_csv('../data/tweets_base_madre.csv', encoding ='utf-8')
 """)
-st.dataframe(dfFirst) 
+
+st.dataframe(dfFirst)
+del dfFirst
 st.write("""
 Then, we classify them manually, creating a new column in our data frame named "classification". In that column we putted a number from 0 to 3, depending the content of the tweet.
 
@@ -100,29 +109,35 @@ Then, we classify them manually, creating a new column in our data frame named "
 2. If the content of the tweet was neutral
 3. If the content of the tweet wasn't related to the subject.
 """)
+
 st.dataframe(dfClass) 
+del dfClass
 st.write("""
 ### Before going deeper with tokenization, classification, etc. we did an analysis of which hashtags and arrobas people use when they mention AMLO and also the number of likes that the tweets have depending on their classification using the column "full_text".
 ## Hashtags:
 """)
+
 col1, col2 = st.beta_columns(2)
 
 with col1:
     with open('Hashtags/Frecuencia de 260 HashTags de tweets liberales.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
+    del html_string
     with open('Hashtags/Frecuencia de 436 HashTags de tweets conservadores.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
-    
+    del html_string
+
 with col2:
     with open('Hashtags/Frecuencia de 415 HashTags de tweets neutrales.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
+    del html_string
     with open('Hashtags/Frecuencia de 1110 HashTags de tweets Totales.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True) 
-    
+    del html_string
 
 col1, col2, col3 = st.beta_columns(3)
 
@@ -139,7 +154,7 @@ with col3:
     with open('Hashtags/graficaHashtagsTopTotal.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=550, height=720, scrolling=True)
-
+    del html_string
 #st.write("""
 ### Arrobas.
 #poner todo lo de arrobas
@@ -152,7 +167,7 @@ st.write("""
 with open('graficaLikesTopTotal.html', 'r') as f:
     html_string = f.read()
 components.html(html_string, width=800, height=480, scrolling=True)
-
+del html_string
 st.write(
 '''
 ## Now, let's go deeper...
@@ -208,10 +223,9 @@ dfClean.drop('id', inplace=True, axis=1)
 dfClean.drop('user id', inplace=True, axis=1)
 dfClean.drop('tidy_text', inplace=True, axis=1)
 dfClean.drop('TokenizeTweetsTidy_text', inplace=True, axis=1)
-
-
 st.dataframe(dfClean) 
-
+del df
+del dfClean
 st.write(
 '''
 Note: Before taking the next step, we made sure that there were no repeated tweets (in case there was more than one of the same, we would keep the first one and delete the others)
@@ -231,8 +245,9 @@ dfClean2 = df
 dfClean2.drop('id', inplace=True, axis=1)
 dfClean2.drop('user id', inplace=True, axis=1)
 dfClean2.drop('tidy_text', inplace=True, axis=1)
-st.dataframe(dfClean2) 
-
+st.dataframe(dfClean2)
+del df
+del dfClean2
 st.write(
 '''
 Next, we took (from the column "clasification") those tweets that have clasification=0 and clasification=1 and we created a new dataframe with those two together.
@@ -252,7 +267,8 @@ libCon.drop('id', inplace=True, axis=1)
 libCon.drop('user id', inplace=True, axis=1)
 libCon.drop('tidy_text', inplace=True, axis=1)
 st.dataframe(libCon)
-
+del df
+del libCon
 st.write(
     '''
 ## Then, we vectorize the tweets that are in the column "TokenizeTweetsTidy_text" with Tf-idf.
@@ -365,7 +381,7 @@ with col1:
     with open('LearningCurveSVM.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
-
+    del html_string
 with col2:
     st.write(
     '''
@@ -421,7 +437,7 @@ with col2:
     with open('LearningCurveRegLog.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
-
+    del html_string
 st.write("""
 *According to the learning curves of the two models, the two graphs tell us the same thing:
 more training data is needed to be able to have a smaller error.*
@@ -469,11 +485,12 @@ with col2:
     with open('matrizLogisticRegression.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
 with col3:
     with open('rocaucLogisticRegression.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=650, height=500, scrolling=True)
-    
+    del html_string
 st.write(
 '''
 
@@ -503,11 +520,12 @@ with col2:
     with open('matrizSVC.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
 with col3:
     with open('rocaucSVC.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=650, height=500, scrolling=True)
-    
+    del html_string
 st.write(
 '''
 The results of the SVM do not differ much from the logistic regression model, the good thing here is that it increased what we wanted; the f1 score of the "liberal" class.
