@@ -30,6 +30,24 @@ dfClass.drop('tidy_text', inplace=True, axis=1)
 st.write("""
 # What happen if you mix Twitter, the president of México and natural language processing?
 Nowdays, there is a lot of information in twitter and a bunch of people using this social media dialy (which creates more information) so… what happen if you grab a bunch of tweets that have words related to the politics of México and mainly, of course, Andrés Manuel López Obrador (actual president of México) and do an analysis? in this post we will show you the analysis that we did in the courses of natural language processing and pattern recognition in the university of Sonora.
+
+### Natural Language Processing Teacher:
+* Olivia Carolina Gutú Ocampo
+
+
+### Pattern Recognition Teacher:
+* Julio Waissman Vilanova
+
+### This analysis was done by the students:
+* Jesús Armando Báez Camacho
+* Diana Laura Ballesteros Valenzuela
+* Martín José Vega Noriega
+
+### Blog Medium:
+* https://mjvnor.medium.com/what-happen-if-you-mix-twitter-the-president-of-m%C3%A9xico-and-natural-language-processing-bdb015959503
+
+### Github repository:
+* https://github.com/MJVNOR/MexicanPoliticsTweetClassification
 """)
 
 st.markdown('''
