@@ -448,7 +448,7 @@ with col2:
         name='Cross-validation score',
         
     ))
-
+.
     fig.update_traces(mode='lines')
     fig.write_html("LearningCurveSVM.html")
     fig.show()
@@ -456,11 +456,11 @@ with col2:
     '''
     )
 
-
     with open('LearningCurveSVM.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
     del html_string
+
 st.write("""
 *According to the learning curves of the two models, the two graphs tell us the same thing:
 more training data is needed to be able to have a smaller error.*
