@@ -114,6 +114,15 @@ st.dataframe(dfClass)
 del dfClass
 st.write("""
 ### Before going deeper with tokenization, classification, etc. we did an analysis of which hashtags and arrobas people use when they mention AMLO and also the number of likes that the tweets have depending on their classification using the column "full_text".
+## In general:
+""")
+
+with open('BaseMother.html', 'r') as f:
+    html_string = f.read()
+components.html(html_string, width=800, height=480, scrolling=True)
+del html_string
+
+st.write("""
 ## Hashtags:
 """)
 
@@ -313,12 +322,27 @@ with col1:
     )
     
 with col2:
-    dataPlot = Image.open('tdidfPlot.png')
+    dataPlot = Image.open('plotData.png')
     st.image(dataPlot, caption='Tf-idf data', width=720, height=480)
 
 st.write(
 '''
-## Before going into the clasification… what happen if we want to know (passing specific percentage of dataset) the degree of success achieved of our chosen model?
+# ¡Here starts the clasification!
+## To classify we used logistic regression and SVM to see which one classifies the best.
+
+### Logistic regression.
+Why did we choose the logistic regression model? because it is the easiest model to train and also gives a good (and fast) classification.
+
+### SVM (Support-Vector Machine)
+Why did we choose the SVM model? because is a fast and dependable classification algorithm that performs very well with a limited amount of data to analyze. 
+
+## Before going into the clasification… Using the GridSearchCV technique we obtained the best values ​​for the classification in the two models.
+* In the case of logistic regression the results were using:
+    * RegLog = 'C': 5, 'max_iter': 100, 'solver': 'saga'
+* For the support vector machine the results were:
+    * 'C': 100, 'gamma': 0.01, 'kernel': 'rbf'
+
+## Next what happen if we want to know (passing specific percentage of dataset) the degree of success achieved of our chosen model?
 
 ### We can know that by doing the learning curve!
 '''
@@ -333,9 +357,9 @@ with col1:
     ~~~
     # Ploting Learning Curve
     # Creating CV training and test scores for various training set sizes
-    X, _, y, _, Tfidf_vect = separaData(df,'TokenizeTweetsTidy_text',1)
+    X, _, y, _, Tfidf_vect = separaData(libCon,'TokenizeTweetsTidy_text',1)
     cv = StratifiedKFold(n_splits=10)
-    estimator = LogisticRegression(solver='lbfgs',max_iter=100 , C=1)
+    estimator = LogisticRegression(solver='saga',max_iter=100 , C=5)
     train_sizes, train_scores, test_scores = learning_curve(estimator,X, y, cv=cv, scoring='f1_weighted', n_jobs=-1,train_sizes=np.linspace(0.3, 1.0, 10))
 
     # Creating means and standard deviations of training set scores
@@ -368,17 +392,16 @@ with col1:
         line = dict(width=4),
         mode='lines+markers',
         name='Cross-validation score',
-        
     ))
 
     fig.update_traces(mode='lines')
-    fig.write_html("LearningCurveSVM.html")
+    fig.write_html("LearningCurveRegLogistic.html")
     fig.show()
     ~~~
     '''
     )
 
-    with open('LearningCurveSVM.html', 'r') as f:
+    with open('LearningCurveRegLogistic.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
     del html_string
@@ -388,9 +411,9 @@ with col2:
     ~~~
     # Ploting Learning Curve
     # Creating CV training and test scores for various training set sizes
-    X, _, y, _, Tfidf_vect = separaData(df,'TokenizeTweetsTidy_text',1)
+    X, _, y, _, Tfidf_vect = separaData(libCon,'TokenizeTweetsTidy_text',1)
     cv = StratifiedKFold(n_splits=10)
-    estimator = SVC(gamma=1, C=1,probability=True, kernel= 'rbf')
+    estimator = SVC(gamma=0.01, C=100,probability=True, kernel= 'rbf')
     train_sizes, train_scores, test_scores = learning_curve(estimator,X, y, cv=cv, scoring='f1_weighted', n_jobs=-1,train_sizes=np.linspace(0.3, 1.0, 10))
 
     # Creating means and standard deviations of training set scores
@@ -427,14 +450,14 @@ with col2:
     ))
 
     fig.update_traces(mode='lines')
-    fig.write_html("LearningCurveRegLog.html")
+    fig.write_html("LearningCurveSVM.html")
     fig.show()
     ~~~
     '''
     )
 
 
-    with open('LearningCurveRegLog.html', 'r') as f:
+    with open('LearningCurveSVM.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=800, height=480, scrolling=True)
     del html_string
@@ -445,16 +468,15 @@ more training data is needed to be able to have a smaller error.*
 
 st.write(
 '''
-## ¡Here starts the clasification!
-To classify we used logistic regression and SVM to see which one classifies the best.
+### This is the function that we are going to use to train
 ~~~
 def ModeloClasificadorKFoldCV(modeloToTrain, df,nombre):
     X, _, y, _, Tfidf_vect = separaData(df,'TokenizeTweetsTidy_text',1)
 
     if modeloToTrain == LogisticRegression:
-        myModelo = modeloToTrain(solver='lbfgs',max_iter=100 , C=1)
+        myModelo = modeloToTrain(solver='saga',max_iter=100 , C=5)
     elif modeloToTrain == SVC:
-        myModelo = modeloToTrain(gamma=1, C=1,probability=True, kernel= 'rbf')
+        myModelo = modeloToTrain(gamma=0.01, C=100,probability=True, kernel= 'rbf') 
 
     cv = KFold(n_splits=10, random_state=None, shuffle=False)
     scores = []
@@ -463,34 +485,181 @@ def ModeloClasificadorKFoldCV(modeloToTrain, df,nombre):
             Train_X_Tfidf, Test_X_Tfidf, Train_Y, Test_Y = X[train_index], X[test_index], y[train_index], y[test_index]
             myModelo.fit(Train_X_Tfidf, Train_Y)
             scores.append(myModelo.score(Test_X_Tfidf, Test_Y))
-    ~~~
-    ### Logistic regression.
-    Why did we choose the logistic regression model? because it is the easiest model to train and also gives a good (and fast) classification.
-
-    The first thing we did was define our k-fold and after that we trained!
-
-    Then we got the predictions, the confusion matrix and the Roc curve of the model.
-    ~~~
-    modelLogisticRegression = ModeloClasificadorKFoldCV(LogisticRegression, libCon, "LogisticRegression")
-    ~~~
+~~~
+The first thing we did was define our k-fold and after that we trained!
+Then we got the predictions, the confusion matrix and the Roc curve of the model.
 '''
 )
 
-col1, col2, col3 = st.beta_columns(3)
+st.write(
+'''
+### Now, we have two options, to test our data without stemming and stemming.
+'''
+)
+
+st.write(
+'''
+### First the results without stemming:
+#### Logistic regression:
+''')
+
+col1, col2 = st.beta_columns(2)
 
 with col1:
-    dataPlot = Image.open('logRegReportAi.png')
-    st.image(dataPlot, caption='', width=620, height=380)
-with col2:
-    with open('matrizLogisticRegression.html', 'r') as f:
+    with open('SinLematizar/NoThreshold/regLogSin/matrizLogisticRegressionNoThresholdNoLem.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=600, height=500, scrolling=True)
     del html_string
-with col3:
-    with open('rocaucLogisticRegression.html', 'r') as f:
+    with open('SinLematizar/NoThreshold/regLogSin/rocaucLogisticRegressionNoThresholdNoLem.html', 'r') as f:
         html_string = f.read()
     components.html(html_string, width=650, height=500, scrolling=True)
     del html_string
+with col2:
+    dataPlot = Image.open('SinLematizar/NoThreshold/regLogSin/regLogreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/NoThreshold/regLogSin/regLorRocAuc.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+
+st.write(
+    '''
+    #### SVM:
+
+    '''
+)
+
+col1, col2 = st.beta_columns(2)
+
+with col1:
+    with open('SinLematizar/NoThreshold/SVMSin/matrizSVCNoThresholdNoLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
+    with open('SinLematizar/NoThreshold/SVMSin/rocaucSVCNoThresholdNoLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=650, height=500, scrolling=True)
+    del html_string
+with col2:
+    dataPlot = Image.open('SinLematizar/NoThreshold/SVMSin/SVMreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/NoThreshold/SVMSin/SVMRocAuc.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+
+st.write(
+    '''
+    ### Now we will see if changing to the best threshold improves the f1 score:
+    #### Logistic regression:
+    '''
+)
+
+col1, col2 = st.beta_columns(2)
+
+with col1:
+    with open('SinLematizar/Threshold/regLogSin/matrizLogisticRegressionThresholdNoLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
+    dataPlot = Image.open('SinLematizar/Threshold/regLogSin/regLogthreesholdSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/Threshold/regLogSin/regLogVSSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+with col2:
+    dataPlot = Image.open('SinLematizar/Threshold/regLogSin/regLogreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/Threshold/regLogSin/regLogRogCurveSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+
+st.write(
+    '''
+    #### SVM:
+
+    '''
+)
+
+col1, col2 = st.beta_columns(2)
+
+with col1:
+    with open('SinLematizar/Threshold/SVMSin/matrizSVCThresholdNoLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
+    dataPlot = Image.open('SinLematizar/Threshold/SVMSin/SVMthreesholdSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/Threshold/SVMSin/SVMVSSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+with col2:
+    dataPlot = Image.open('SinLematizar/Threshold/SVMSin/SVMreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('SinLematizar/Threshold/SVMSin/SVMRogCurveSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    
+st.write(
+    '''
+    
+    ### Now the results using stemming:
+    #### Logistic regression:
+
+    '''
+)
+
+col1, col2 = st.beta_columns(2)
+
+with col1:
+    with open('Lematizando/regLog/matrizLogisticRegressionNoThresholdConLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
+    with open('Lematizando/regLog/rocaucLogisticRegressionNoThresholdConLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string 
+with col2:
+    dataPlot = Image.open('Lematizando/regLog/regLogreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('Lematizando/regLog/regLorRocAuc.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+
+st.write(
+    '''
+    #### SVM:
+
+    '''
+)
+
+col1, col2 = st.beta_columns(2)
+
+with col1:
+    with open('Lematizando/svm/matrizSVCNoThresholdConLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string
+    with open('Lematizando/svm/rocaucSVCNoThresholdConLem.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, width=600, height=500, scrolling=True)
+    del html_string 
+with col2:
+    dataPlot = Image.open('Lematizando/svm/SVMreportSin.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+    dataPlot = Image.open('Lematizando/svm/SVMRocAuc.png')
+    st.image(dataPlot, caption='', width=620, height=380)
+    del dataPlot
+
+
+
 st.write(
 '''
 
@@ -499,33 +668,7 @@ From the roc curve, we can say that our classes, especially, the classification 
 
 '''
 )
-st.write(
-'''
-### SVM (Support-Vector Machine)
-Why did we choose the SVM model? because is a fast and dependable classification algorithm that performs very well with a limited amount of data to analyze. 
 
-The first thing we did was define our k-fold and after that we trained!
-
-Then we got the predictions, the confusion matrix and the Roc curve.
-~~~
-modelSVC = ModeloClasificadorKFoldCV(SVC, libCon, "SVC")
-~~~
-'''
-)
-col1, col2, col3 = st.beta_columns(3)
-with col1:
-    dataPlot = Image.open('svmReportAi.png')
-    st.image(dataPlot, caption='', width=620, height=380)
-with col2:
-    with open('matrizSVC.html', 'r') as f:
-        html_string = f.read()
-    components.html(html_string, width=600, height=500, scrolling=True)
-    del html_string
-with col3:
-    with open('rocaucSVC.html', 'r') as f:
-        html_string = f.read()
-    components.html(html_string, width=650, height=500, scrolling=True)
-    del html_string
 st.write(
 '''
 The results of the SVM do not differ much from the logistic regression model, the good thing here is that it increased what we wanted; the f1 score of the "liberal" class.
@@ -535,20 +678,21 @@ So after looking at the SVM and logistic regression results, we will use all the
 ~~~
 def ModeloClasificadorFinal(modeloToTrain, df,nombre):
     Train_X_Tfidf, Test_X_Tfidf, Train_Y, Test_Y, Tfidf_vect = separaData(df,'TokenizeTweetsTidy_text',1)
-    
+
     if modeloToTrain == LogisticRegression:
-        myModelo = modeloToTrain(solver='lbfgs',max_iter=100, C=1)
+        myModelo = modeloToTrain(solver='saga',max_iter=100 , C=5)
     elif modeloToTrain == SVC:
-            myModelo = modeloToTrain(gamma=1, C=1,probability=True, kernel= 'rbf') 
-        
+        myModelo = modeloToTrain(gamma=0.01, C=100,probability=True, kernel= 'rbf') 
+
     myModelo.fit(Train_X_Tfidf,Train_Y)
-    
+
     return myModelo
 
 modelSVCFinal = ModeloClasificadorFinal(SVC, libCon, "Maquina de vector de soportes")
 ~~~
 '''
 )
+
 st.write(
 '''
 
