@@ -281,6 +281,9 @@ del libCon
 st.write(
     '''
 ## Then, we vectorize the tweets that are in the column "TokenizeTweetsTidy_text" with Tf-idf.
+
+Unigrams, bigrams and trigrams are used, the minimum frequency of a word has to be repeated 5 times in the documents to be taken into account and if a term is repeated more than 90% in the documents, it is eliminated.
+
 To see the tf-idf data set we use TSNEVisualizer, this one creates an inner transformer pipeline that applies such a decomposition first (SVD with 50 components by default), then performs the t-SNE embedding. The visualizer then plots the scatter plot, coloring by cluster or by class, or neither if a structural analysis is required.
     '''
 )
@@ -606,7 +609,7 @@ with col2:
     
 st.write(
     '''
-    
+    What can be seen by observing the f1 score of the logistic regression is that changing the threshold is negatively affected and the same can also be observed with the support vector machine. So we will discard the option to modify the threshold.
     ### Now the results using stemming:
     #### Logistic regression:
 
@@ -662,6 +665,7 @@ with col2:
 
 st.write(
 '''
+Now looking at the results of when we lemmatize to when we do not, we can realize that if we do so we have a small loss in the f1 score both in the logistic regression and in the svm, that is why we will make the decision to train without lemmatizing.
 
 As can be seen in the graphs, we can conclude that the logistic regression classifies conservative tweets very well, but liberal tweets very poorly, this is observed from the confusion matrix and the f1 score.
 From the roc curve, we can say that our classes, especially, the classification of the "liberal" class is very bad. For this we will try to solve our problems using another model which would be the SVM, since we want to improve the f1 score of the "liberal" class.
@@ -677,7 +681,6 @@ So after looking at the SVM and logistic regression results, we will use all the
 
 ~~~
 def ModeloClasificadorFinal(modeloToTrain, df,nombre):
-    Train_X_Tfidf, Test_X_Tfidf, Train_Y, Test_Y, Tfidf_vect = separaData(df,'TokenizeTweetsTidy_text',1)
 
     if modeloToTrain == LogisticRegression:
         myModelo = modeloToTrain(solver='saga',max_iter=100 , C=5)
