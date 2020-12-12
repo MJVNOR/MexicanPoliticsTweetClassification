@@ -239,7 +239,7 @@ st.write(
 '''
 Note: Before taking the next step, we made sure that there were no repeated tweets (in case there was more than one of the same, we would keep the first one and delete the others)
 
-The next step we did was to create another column named "TokenizeTweetsTidy_text", and that column contains the information of the column "cleanTweets" mentioned before BUT we applied tokenization to that column (agregar el porque creamos una columna?? es bueno tener el texto original).
+The next step we did was to create another column named "TokenizeTweetsTidy_text", and that column contains the information of the column "cleanTweets" mentioned before BUT we applied tokenization to that column.
 ~~~
 #Tokenizar
 df['TokenizeTweetsTidy_text'] = df.apply(lambda row: nltk.word_tokenize(row['CleanTweets']), axis=1)
@@ -555,6 +555,7 @@ st.write(
     '''
     ### Now we will see if changing to the best threshold improves the f1 score:
     #### Logistic regression:
+    Best Threshold=0.681871, G-Mean=0.708
     '''
 )
 
@@ -582,7 +583,7 @@ with col2:
 st.write(
     '''
     #### SVM:
-
+    Best Threshold=0.691281, G-Mean=0.659
     '''
 )
 
